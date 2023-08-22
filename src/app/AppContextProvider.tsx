@@ -2,10 +2,10 @@
 import React, {createContext, useState, useContext} from "react";
 
 export enum TaskType {
-  "in-progress",
-  "done",
-  "created",
-  "backlog",
+  "in-progress" = "in-progress",
+  done = "done",
+  created = "created",
+  backlog = "backlog",
 }
 
 export type Task = {
@@ -26,12 +26,13 @@ export type Project = {
 };
 
 type appContext = {
-  selectedTask: Task;
+  selectedTask: Task | undefined;
   createdTask: Task[];
   inProgressTask: Task[];
   backlogTask: Task[];
   doneTask: Task[];
 
+  setSelectedTask: React.Dispatch<React.SetStateAction<Task | undefined>>;
   setCreatedTask: React.Dispatch<React.SetStateAction<Task[]>>;
   setInProgressTask: React.Dispatch<React.SetStateAction<Task[]>>;
   setBacklogTask: React.Dispatch<React.SetStateAction<Task[]>>;
@@ -46,6 +47,7 @@ export const AppContextProvider = ({children}: {children: React.ReactNode}) => {
   const [inProgressTask, setInProgressTask] = useState<Task[]>([]);
   const [backlogTask, setBacklogTask] = useState<Task[]>([]);
   const [doneTask, setDoneTask] = useState<Task[]>([]);
+  const [selectedTask, setSelectedTask] = useState<Task | undefined>();
 
   return (
     <AppContext.Provider
@@ -54,7 +56,9 @@ export const AppContextProvider = ({children}: {children: React.ReactNode}) => {
         inProgressTask,
         backlogTask,
         doneTask,
+        selectedTask,
 
+        setSelectedTask,
         setCreatedTask,
         setInProgressTask,
         setBacklogTask,

@@ -1,4 +1,5 @@
-import React, {ComponentProps, useState} from "react";
+import React, {ComponentProps, SyntheticEvent, useState} from "react";
+import {flushSync} from "react-dom";
 import {Task, TaskType, useAppContext} from "../AppContextProvider";
 
 type Props = {
@@ -19,9 +20,10 @@ const TaskList = ({
   taskList,
   setter,
   type,
+  onDrop,
   children,
 }: ComponentProps<"div"> & Props) => {
-  const {} = useAppContext();
+  const {setSelectedTask} = useAppContext();
   const [openForm, updateOpenForm] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -35,29 +37,37 @@ const TaskList = ({
 
   return (
     <>
-      <div className="flex flex-col h-full gap-2" onDragEnter={() => {}}>
+      <div className="flex flex-col h-full gap-2">
         {children}
         {!!taskList.length &&
           taskList.map((task) => {
             return (
               <div
                 key={task.id}
-                className="p-2 border rounded shadow-sm hover:bg-gray-200"
+                className="p-2 border rounded shadow-sm hover:bg-gray-100"
                 draggable
-                // onDragStart={() => console.log()}
-                onDragEnter={() => {}}
-                onDrop={() => {}}
+                onDragOver={(event) => {
+                  event.stopPropagation();
+                  event.preventDefault();
+                }}
+                onDragStart={() => setSelectedTask(task)}
+                onDrop={onDrop}
               >
                 {task.title}
               </div>
             );
           })}
-        <label
+        <div
           onClick={() => updateOpenForm(true)}
           className="p-2 text-gray-500 rounded cursor-pointer hover:bg-gray-100"
+          onDrop={onDrop}
+          onDragOver={(event) => {
+            event.stopPropagation();
+            event.preventDefault();
+          }}
         >
           + New
-        </label>
+        </div>
       </div>
       {openForm && (
         <div
