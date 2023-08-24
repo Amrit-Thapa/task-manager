@@ -2,7 +2,7 @@
 import React, {createContext, useState, useContext} from "react";
 
 export enum TaskType {
-  "in-progress" = "in-progress",
+  "inProgress" = "in-progress",
   done = "done",
   created = "created",
   backlog = "backlog",
@@ -10,9 +10,9 @@ export enum TaskType {
 
 export type Task = {
   title: string;
-  id: string;
+  id: number;
+  index: number;
   description: string;
-  time?: number;
   status: TaskType;
 };
 export type Project = {
@@ -25,14 +25,21 @@ export type Project = {
   doneTask: Task[];
 };
 
+type SelectedTask = {
+  sourceUpdater: React.Dispatch<React.SetStateAction<Task[]>>;
+  task: Task;
+};
+
 type appContext = {
-  selectedTask: Task | undefined;
+  selectedTask: SelectedTask | undefined;
   createdTask: Task[];
   inProgressTask: Task[];
   backlogTask: Task[];
   doneTask: Task[];
 
-  setSelectedTask: React.Dispatch<React.SetStateAction<Task | undefined>>;
+  setSelectedTask: React.Dispatch<
+    React.SetStateAction<SelectedTask | undefined>
+  >;
   setCreatedTask: React.Dispatch<React.SetStateAction<Task[]>>;
   setInProgressTask: React.Dispatch<React.SetStateAction<Task[]>>;
   setBacklogTask: React.Dispatch<React.SetStateAction<Task[]>>;
@@ -47,7 +54,7 @@ export const AppContextProvider = ({children}: {children: React.ReactNode}) => {
   const [inProgressTask, setInProgressTask] = useState<Task[]>([]);
   const [backlogTask, setBacklogTask] = useState<Task[]>([]);
   const [doneTask, setDoneTask] = useState<Task[]>([]);
-  const [selectedTask, setSelectedTask] = useState<Task | undefined>();
+  const [selectedTask, setSelectedTask] = useState<SelectedTask | undefined>();
 
   return (
     <AppContext.Provider
