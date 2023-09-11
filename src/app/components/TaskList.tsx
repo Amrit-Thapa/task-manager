@@ -7,7 +7,7 @@ type Props = {
   taskList: Task[];
   type: Status;
   onDropItem: (task?: Task) => void;
-  setter: React.Dispatch<React.SetStateAction<Task[]>>;
+  addTask: (task: Task) => void;
 } & ComponentProps<"div">;
 
 const Label = ({children, className}: ComponentProps<"div">) => {
@@ -22,14 +22,14 @@ const Label = ({children, className}: ComponentProps<"div">) => {
   );
 };
 
-const ListItem = ({taskList, onDropItem, setter, type}: Props) => {
+const ListItem = ({taskList, onDropItem, addTask, type}: Props) => {
   const {selectedTask, setSelectedTask} = useAppContext();
   const [openForm, updateOpenForm] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
 
   const handleTaskSubmit = (task: Task) => {
-    setter((prev) => [...prev, task]);
+    addTask(task);
     setTitle("");
     updateOpenForm(false);
   };
