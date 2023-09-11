@@ -6,6 +6,7 @@ import {
   Store,
   Task,
   Status,
+  addTask,
 } from "../../database/index";
 import {useAppContext} from "./AppContextProvider";
 import TaskList from "./components/TaskList";
@@ -75,6 +76,11 @@ export default function Home() {
     setSelectedTask(undefined);
   };
 
+  const handleTaskAdd = (task: Task) => {
+    addTask(Store.Tasks, task);
+    setTaskList((prev) => [...prev, task]);
+  };
+
   return (
     <div className="grid grid-cols-5 min-h-[calc(100vh-114px)] gap-3 p-2">
       <TaskList>
@@ -83,7 +89,7 @@ export default function Home() {
           <span>{createdList?.length || 0}</span>
         </div>
         <TaskList.ListItem
-          setter={setTaskList}
+          addTask={handleTaskAdd}
           type={Status.created}
           taskList={createdList || []}
           onDropItem={(task) => handleTaskDrop(Status.created, task)}
@@ -95,7 +101,7 @@ export default function Home() {
           <span>{backlogList?.length || 0}</span>
         </div>
         <TaskList.ListItem
-          setter={setTaskList}
+          addTask={handleTaskAdd}
           type={Status.backlog}
           taskList={backlogList || []}
           onDropItem={(task) => handleTaskDrop(Status.backlog, task)}
@@ -107,7 +113,7 @@ export default function Home() {
           <span>{inprogressList?.length || 0}</span>
         </div>
         <TaskList.ListItem
-          setter={setTaskList}
+          addTask={handleTaskAdd}
           type={Status.inProgress}
           taskList={inprogressList || []}
           onDropItem={(task) => handleTaskDrop(Status.inProgress, task)}
@@ -119,7 +125,7 @@ export default function Home() {
           <span>{doneList?.length || 0}</span>
         </div>
         <TaskList.ListItem
-          setter={setTaskList}
+          addTask={handleTaskAdd}
           type={Status.done}
           taskList={doneList || []}
           onDropItem={(task) => handleTaskDrop(Status.done, task)}

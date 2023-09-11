@@ -49,7 +49,7 @@ export const initDB = (): Promise<boolean | IDBDatabase> => {
 };
 
 // create event
-export const addData = <T>(
+export const addTask = <T>(
   storeName: Store,
   data: T,
 ): Promise<T | string | null> => {
@@ -111,8 +111,6 @@ export const getAllStoreData = <T>(storeName: Store): Promise<T[]> => {
     request = indexedDB.open(DBName.TaskManager);
 
     request.onsuccess = () => {
-      console.log("get all data");
-
       db = request.result;
       const tx = db.transaction(storeName, "readonly");
       const store = tx.objectStore(storeName);
