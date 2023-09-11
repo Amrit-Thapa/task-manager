@@ -1,56 +1,77 @@
 "use client";
-import {TaskType, useAppContext} from "./AppContextProvider";
+import {useEffect, useState} from "react";
+import {
+  getAllStoreData,
+  initDB,
+  Store,
+  Task,
+  Status,
+} from "../../database/index";
+import {useAppContext} from "./AppContextProvider";
 import TaskList from "./components/TaskList";
+import {groupBy, insertTaskAtIndex} from "./utils/index";
 
 export default function Home() {
-  const {
-    createdTask,
-    setCreatedTask,
-    backlogTask,
-    setBacklogTask,
-    inProgressTask,
-    setInProgressTask,
-    doneTask,
-    setDoneTask,
-    selectedTask,
-    setSelectedTask,
-  } = useAppContext();
+  const {selectedTask, setSelectedTask} = useAppContext();
 
-  const handleTaskDrop = (destination: TaskType) => {
-    if (!selectedTask) return;
-    if (selectedTask.task.status === destination) return;
+  const [taskList, setTaskList] = useState<Task[]>([]);
+  const [createdList, setCreatedList] = useState<Task[]>();
+  const [doneList, setDoneList] = useState<Task[]>();
+  const [inprogressList, setInprogressList] = useState<Task[]>();
+  const [backlogList, setBacklogList] = useState<Task[]>();
 
-    selectedTask.sourceUpdater((prev) => {
-      const temp = prev.filter((item) => item.id !== selectedTask.task.id);
-      return temp;
-    });
+  useEffect(() => {
+    if (taskList.length) {
+      const groupedTask = groupBy<Task, Status>(
+        taskList,
+        (item) => item.status,
+      );
 
-    switch (destination) {
-      case TaskType.backlog:
-        setBacklogTask((prev) => [
-          {...selectedTask.task, status: TaskType.backlog},
-          ...prev,
-        ]);
-        break;
-      case TaskType.created:
-        setCreatedTask((prev) => [
-          {...selectedTask.task, status: TaskType.created},
-          ...prev,
-        ]);
-        break;
-      case TaskType.done:
-        setDoneTask((prev) => [
-          {...selectedTask.task, status: TaskType.done},
-          ...prev,
-        ]);
-        break;
-      case TaskType.inProgress:
-        setInProgressTask((prev) => [
-          {...selectedTask.task, status: TaskType["inProgress"]},
-          ...prev,
-        ]);
-        break;
+      setBacklogList([...(groupedTask.get(Status.backlog) || [])]);
+      setInprogressList(groupedTask.get(Status.inProgress));
+      setDoneList(groupedTask.get(Status.done));
+      setCreatedList(groupedTask.get(Status.created));
     }
+  }, [taskList]);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        await initDB();
+        const res = await getAllStoreData<Task>(Store.Tasks);
+        setTaskList(res);
+      } catch (error) {
+        console.log(error);
+      }
+    })();
+  }, []);
+
+  const handleTaskDrop = (destination: Status, task?: Task) => {
+    if (!selectedTask) return;
+
+    const groupedTask = groupBy<Task, Status>(
+      taskList.filter((item) => item.id !== selectedTask.id),
+      (item) => item.status,
+    );
+    groupedTask.set(
+      destination,
+      insertTaskAtIndex(groupedTask.get(destination) || [], {
+        ...selectedTask,
+        status: destination,
+        index: `${destination}_${
+          task
+            ? parseInt(task.index.split("_")[1])
+            : (groupedTask.get(destination) || []).length
+        }`,
+      }),
+    );
+
+    setTaskList([
+      ...(groupedTask.get(Status.backlog) || []),
+      ...(groupedTask.get(Status.created) || []),
+      ...(groupedTask.get(Status.inProgress) || []),
+      ...(groupedTask.get(Status.done) || []),
+    ] as Task[]);
     setSelectedTask(undefined);
   };
 
@@ -59,49 +80,49 @@ export default function Home() {
       <TaskList>
         <div className="flex gap-2">
           <TaskList.Label>Task</TaskList.Label>
-          <span>{createdTask.length}</span>
+          <span>{createdList?.length || 0}</span>
         </div>
         <TaskList.ListItem
-          setter={setCreatedTask}
-          type={TaskType.created}
-          taskList={createdTask}
-          onDrop={() => handleTaskDrop(TaskType.created)}
+          setter={setTaskList}
+          type={Status.created}
+          taskList={createdList || []}
+          onDropItem={(task) => handleTaskDrop(Status.created, task)}
         />
       </TaskList>
       <TaskList>
         <div className="flex gap-2">
           <TaskList.Label className="bg-red-200">BackLog</TaskList.Label>
-          <span>{backlogTask.length}</span>
+          <span>{backlogList?.length || 0}</span>
         </div>
         <TaskList.ListItem
-          setter={setBacklogTask}
-          type={TaskType.backlog}
-          taskList={backlogTask}
-          onDrop={() => handleTaskDrop(TaskType.backlog)}
+          setter={setTaskList}
+          type={Status.backlog}
+          taskList={backlogList || []}
+          onDropItem={(task) => handleTaskDrop(Status.backlog, task)}
         />
       </TaskList>
       <TaskList>
         <div className="flex gap-2">
           <TaskList.Label className="bg-blue-200">In Progress</TaskList.Label>
-          <span> {inProgressTask.length}</span>
+          <span>{inprogressList?.length || 0}</span>
         </div>
         <TaskList.ListItem
-          setter={setInProgressTask}
-          type={TaskType.inProgress}
-          taskList={inProgressTask}
-          onDrop={() => handleTaskDrop(TaskType.inProgress)}
+          setter={setTaskList}
+          type={Status.inProgress}
+          taskList={inprogressList || []}
+          onDropItem={(task) => handleTaskDrop(Status.inProgress, task)}
         />
       </TaskList>
       <TaskList>
         <div className="flex gap-2">
           <TaskList.Label className="bg-purple-200">Done</TaskList.Label>
-          <span>{doneTask.length}</span>
+          <span>{doneList?.length || 0}</span>
         </div>
         <TaskList.ListItem
-          setter={setDoneTask}
-          type={TaskType.done}
-          taskList={doneTask}
-          onDrop={() => handleTaskDrop(TaskType.done)}
+          setter={setTaskList}
+          type={Status.done}
+          taskList={doneList || []}
+          onDropItem={(task) => handleTaskDrop(Status.done, task)}
         />
       </TaskList>
     </div>

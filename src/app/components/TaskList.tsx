@@ -1,10 +1,12 @@
 import React, {ComponentProps, useState} from "react";
 import {twMerge} from "tailwind-merge";
-import {Task, TaskType, useAppContext} from "../AppContextProvider";
+import {Task, Status} from "../../../database/index";
+import {useAppContext} from "../AppContextProvider";
 
 type Props = {
   taskList: Task[];
-  type: TaskType;
+  type: Status;
+  onDropItem: (task?: Task) => void;
   setter: React.Dispatch<React.SetStateAction<Task[]>>;
 } & ComponentProps<"div">;
 
@@ -20,14 +22,14 @@ const Label = ({children, className}: ComponentProps<"div">) => {
   );
 };
 
-const ListItem = ({taskList, onDrop, setter, type}: Props) => {
+const ListItem = ({taskList, onDropItem, setter, type}: Props) => {
   const {selectedTask, setSelectedTask} = useAppContext();
   const [openForm, updateOpenForm] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
 
   const handleTaskSubmit = (task: Task) => {
-    setter((prev) => [task, ...prev]);
+    setter((prev) => [...prev, task]);
     setTitle("");
     updateOpenForm(false);
   };
@@ -39,11 +41,11 @@ const ListItem = ({taskList, onDrop, setter, type}: Props) => {
           return (
             <div
               key={task.id}
-              className="border rounded shadow-sm hover:bg-gray-100"
+              className="p-2 border rounded shadow-sm hover:bg-gray-100 "
               draggable
               onDragOver={(event) => {
                 event.preventDefault();
-                if (task.id !== selectedTask?.task.id) {
+                if (task.id !== selectedTask?.id) {
                   // event.target.style.borderTop = "thick solid #77AAFF";
                 }
               }}
@@ -51,8 +53,8 @@ const ListItem = ({taskList, onDrop, setter, type}: Props) => {
                 event.preventDefault();
                 // event.target.style.borderTop = "none";
               }}
-              onDragStart={() => setSelectedTask({task, sourceUpdater: setter})}
-              onDrop={() => onDrop}
+              onDragStart={() => setSelectedTask(task)}
+              onDrop={() => onDropItem(task)}
             >
               {task.title}
             </div>
@@ -70,7 +72,7 @@ const ListItem = ({taskList, onDrop, setter, type}: Props) => {
                 handleTaskSubmit({
                   title: title || "Untitled",
                   id: Date.now(),
-                  index: taskList.length + 1,
+                  index: `${type}_${taskList.length + 1}`,
                   description,
                   status: type,
                 });
@@ -81,7 +83,7 @@ const ListItem = ({taskList, onDrop, setter, type}: Props) => {
               handleTaskSubmit({
                 title: title || "Untitled",
                 id: Date.now(),
-                index: taskList.length + 1,
+                index: `${type}_${taskList.length + 1}`,
                 description,
                 status: type,
               });
@@ -94,7 +96,7 @@ const ListItem = ({taskList, onDrop, setter, type}: Props) => {
       <div
         onClick={() => updateOpenForm(true)}
         className="p-2 text-gray-500 rounded cursor-pointer hover:bg-gray-100"
-        onDrop={onDrop}
+        onDrop={() => onDropItem()}
         onDragEnd={(event) => {
           event.preventDefault();
           // event.target.style.borderTop = "none";
