@@ -1,5 +1,10 @@
 "use client";
-import {useEffect, useState} from "react";
+import {useEffect, useLayoutEffect, useRef, useState} from "react";
+import {createPortal} from "react-dom";
+import {MdOutlineAddTask, MdOutlineDoneAll} from "react-icons/md";
+import {LuListTodo} from "react-icons/lu";
+import {AiOutlineStop} from "react-icons/ai";
+import {TbProgressCheck} from "react-icons/tb";
 import {
   getAllStoreData,
   initDB,
@@ -20,6 +25,7 @@ export default function Home() {
   const [doneList, setDoneList] = useState<Task[]>();
   const [inprogressList, setInprogressList] = useState<Task[]>();
   const [backlogList, setBacklogList] = useState<Task[]>();
+  const ref = useRef<Element | null>(null);
 
   useEffect(() => {
     if (taskList.length) {
@@ -28,7 +34,7 @@ export default function Home() {
         (item) => item.status,
       );
 
-      setBacklogList([...(groupedTask.get(Status.backlog) || [])]);
+      setBacklogList(groupedTask.get(Status.backlog));
       setInprogressList(groupedTask.get(Status.inProgress));
       setDoneList(groupedTask.get(Status.done));
       setCreatedList(groupedTask.get(Status.created));
@@ -47,6 +53,11 @@ export default function Home() {
     })();
   }, []);
 
+  useLayoutEffect(() => {
+    ref.current = document.getElementById("title-portal");
+  }, []);
+
+  // Todo update this function
   const handleTaskDrop = (destination: Status, task?: Task) => {
     if (!selectedTask) return;
 
@@ -54,6 +65,7 @@ export default function Home() {
       taskList.filter((item) => item.id !== selectedTask.id),
       (item) => item.status,
     );
+
     groupedTask.set(
       destination,
       insertTaskAtIndex(groupedTask.get(destination) || [], {
@@ -76,61 +88,83 @@ export default function Home() {
     setSelectedTask(undefined);
   };
 
-  const handleTaskAdd = (task: Task) => {
-    addTask(Store.Tasks, task);
+  const handleTaskAdd = async (task: Task) => {
+    await addTask<Task>(Store.Tasks, task);
     setTaskList((prev) => [...prev, task]);
   };
 
   return (
-    <div className="grid grid-cols-5 min-h-[calc(100vh-114px)] gap-3 p-2">
-      <TaskList>
-        <div className="flex gap-2">
-          <TaskList.Label>Task</TaskList.Label>
-          <span>{createdList?.length || 0}</span>
-        </div>
-        <TaskList.ListItem
-          addTask={handleTaskAdd}
-          type={Status.created}
-          taskList={createdList || []}
-          onDropItem={(task) => handleTaskDrop(Status.created, task)}
-        />
-      </TaskList>
-      <TaskList>
-        <div className="flex gap-2">
-          <TaskList.Label className="bg-red-200">BackLog</TaskList.Label>
-          <span>{backlogList?.length || 0}</span>
-        </div>
-        <TaskList.ListItem
-          addTask={handleTaskAdd}
-          type={Status.backlog}
-          taskList={backlogList || []}
-          onDropItem={(task) => handleTaskDrop(Status.backlog, task)}
-        />
-      </TaskList>
-      <TaskList>
-        <div className="flex gap-2">
-          <TaskList.Label className="bg-blue-200">In Progress</TaskList.Label>
-          <span>{inprogressList?.length || 0}</span>
-        </div>
-        <TaskList.ListItem
-          addTask={handleTaskAdd}
-          type={Status.inProgress}
-          taskList={inprogressList || []}
-          onDropItem={(task) => handleTaskDrop(Status.inProgress, task)}
-        />
-      </TaskList>
-      <TaskList>
-        <div className="flex gap-2">
-          <TaskList.Label className="bg-purple-200">Done</TaskList.Label>
-          <span>{doneList?.length || 0}</span>
-        </div>
-        <TaskList.ListItem
-          addTask={handleTaskAdd}
-          type={Status.done}
-          taskList={doneList || []}
-          onDropItem={(task) => handleTaskDrop(Status.done, task)}
-        />
-      </TaskList>
-    </div>
+    <>
+      {ref.current &&
+        createPortal(
+          <div className="flex items-center justify-center gap-2 text-4xl">
+            <MdOutlineAddTask />
+            Task
+          </div>,
+          ref.current!,
+        )}
+      <div className="grid grid-cols-5 min-h-[calc(100vh-114px)] gap-3 pt-10 border-t">
+        <TaskList>
+          <div className="flex items-center gap-2">
+            <TaskList.Label>
+              Task
+              <LuListTodo />
+            </TaskList.Label>
+            <span>{createdList?.length || 0}</span>
+          </div>
+          <TaskList.ListItem
+            addTask={handleTaskAdd}
+            type={Status.created}
+            taskList={createdList || []}
+            onDropItem={(task) => handleTaskDrop(Status.created, task)}
+          />
+        </TaskList>
+        <TaskList>
+          <div className="flex items-center gap-2">
+            <TaskList.Label className="bg-red-200">
+              BackLog
+              <AiOutlineStop />
+            </TaskList.Label>
+            <span>{backlogList?.length || 0}</span>
+          </div>
+          <TaskList.ListItem
+            addTask={handleTaskAdd}
+            type={Status.backlog}
+            taskList={backlogList || []}
+            onDropItem={(task) => handleTaskDrop(Status.backlog, task)}
+          />
+        </TaskList>
+        <TaskList>
+          <div className="flex gap-2">
+            <TaskList.Label className="bg-blue-200">
+              In Progress
+              <TbProgressCheck />
+            </TaskList.Label>
+            <span>{inprogressList?.length || 0}</span>
+          </div>
+          <TaskList.ListItem
+            addTask={handleTaskAdd}
+            type={Status.inProgress}
+            taskList={inprogressList || []}
+            onDropItem={(task) => handleTaskDrop(Status.inProgress, task)}
+          />
+        </TaskList>
+        <TaskList>
+          <div className="flex gap-2">
+            <TaskList.Label className="bg-purple-200">
+              Done
+              <MdOutlineDoneAll />
+            </TaskList.Label>
+            <span>{doneList?.length || 0}</span>
+          </div>
+          <TaskList.ListItem
+            addTask={handleTaskAdd}
+            type={Status.done}
+            taskList={doneList || []}
+            onDropItem={(task) => handleTaskDrop(Status.done, task)}
+          />
+        </TaskList>
+      </div>
+    </>
   );
 }
