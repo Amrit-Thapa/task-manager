@@ -14,7 +14,10 @@ const Label = ({children, className}: ComponentProps<"div">) => {
   return (
     <div>
       <label
-        className={twMerge("p-1 bg-green-200 rounded shadow-sm", className)}
+        className={twMerge(
+          "p-1 bg-green-200 rounded shadow-sm flex gap-2 justify-center items-center",
+          className,
+        )}
       >
         {children}
       </label>
@@ -46,12 +49,12 @@ const ListItem = ({taskList, onDropItem, addTask, type}: Props) => {
               onDragOver={(event) => {
                 event.preventDefault();
                 if (task.id !== selectedTask?.id) {
-                  // event.target.style.borderTop = "thick solid #77AAFF";
+                  event.target.style.borderTop = "thick solid #77AAFF";
                 }
               }}
-              onDragEnd={(event) => {
+              onDragLeave={(event) => {
                 event.preventDefault();
-                // event.target.style.borderTop = "none";
+                event.target.style.borderTop = "none";
               }}
               onDragStart={() => setSelectedTask(task)}
               onDrop={() => onDropItem(task)}
