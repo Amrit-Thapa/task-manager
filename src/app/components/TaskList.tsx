@@ -48,19 +48,9 @@ const ListItem = ({taskList, onDropItem, addTask, type, deleteTask}: Props) => {
             <div
               key={task.id}
               className="flex items-center justify-between p-2 border rounded shadow-sm hover:bg-gray-100 group"
-              draggable
-              onDragOver={(event) => {
-                event.preventDefault();
-                if (task.id !== selectedTask?.id) {
-                  event.target.style.borderTop = "thick solid #77AAFF";
-                }
-              }}
-              onDragLeave={(event) => {
-                event.preventDefault();
-                event.target.style.borderTop = "none";
-              }}
               onDragStart={() => setSelectedTask(task)}
               onDrop={() => onDropItem(task)}
+              draggable
             >
               {task.title}
               <PiTrashThin
