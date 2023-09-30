@@ -122,8 +122,12 @@ export const getAllStoreData = <T>(storeName: Store): Promise<T[]> => {
   });
 };
 
-// delete event
-export const deleteData = (storeName: Store, key: string): Promise<boolean> => {
+// delete event and rearrange events
+export const deleteData = (
+  storeName: Store,
+  data: {id: number; updateItems?: {[id: number]: string}},
+): Promise<boolean> => {
+  console.log(data);
   return new Promise((resolve, reject) => {
     request = indexedDB.open(DBName.TaskManager);
 
@@ -132,15 +136,62 @@ export const deleteData = (storeName: Store, key: string): Promise<boolean> => {
 
       const tx = db.transaction(storeName, "readwrite");
       const store = tx.objectStore(storeName);
-      const res = store.delete(key);
 
-      res.onsuccess = () => {
-        resolve(true);
-      };
+      let updatePromises = [];
 
-      res.onerror = () => {
-        reject(false);
-      };
+      if (data.updateItems) {
+        updatePromises = Object.keys(data.updateItems).map((key) => {
+          return new Promise((resolve, reject) => {
+            const getReq = store.get(+key);
+            getReq.onsuccess = (event) => {
+              const itemToUpdate = event?.target?.result;
+              if (itemToUpdate) {
+                Object.assign(itemToUpdate, {index: data.updateItems![+key]});
+
+                const putReq = store.put(itemToUpdate);
+                putReq.onsuccess = () => {
+                  resolve(true);
+                };
+
+                putReq.onerror = (event) => {
+                  console.error("Error updating item:", event?.target?.error);
+                  reject(event?.target?.error);
+                };
+              } else {
+                reject(new Error("Item not found." + key));
+              }
+            };
+          });
+        });
+
+        updatePromises.push(
+          new Promise((res, rej) => {
+            const req = store.delete(data.id);
+            req.onsuccess = () => {
+              res(true);
+            };
+
+            req.onerror = () => {
+              rej(false);
+            };
+          }),
+        );
+
+        Promise.all(updatePromises)
+          .then(() => {
+            tx.oncomplete = () => {
+              db.close();
+              console.log("Update operations completed.");
+              resolve(true);
+            };
+          })
+          .catch((error) => {
+            tx.abort();
+            db.close();
+            console.error("Error updating records:", error);
+            reject(error);
+          });
+      }
     };
   });
 };

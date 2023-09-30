@@ -1,5 +1,6 @@
 import React, {ComponentProps, useState} from "react";
 import {twMerge} from "tailwind-merge";
+import {PiTrashThin} from "react-icons/pi";
 import {Task, Status} from "../../../database/index";
 import {useAppContext} from "../AppContextProvider";
 
@@ -8,6 +9,7 @@ type Props = {
   type: Status;
   onDropItem: (task?: Task) => void;
   addTask: (task: Task) => void;
+  deleteTask: (task: Task) => void;
 } & ComponentProps<"div">;
 
 const Label = ({children, className}: ComponentProps<"div">) => {
@@ -25,13 +27,14 @@ const Label = ({children, className}: ComponentProps<"div">) => {
   );
 };
 
-const ListItem = ({taskList, onDropItem, addTask, type}: Props) => {
+const ListItem = ({taskList, onDropItem, addTask, type, deleteTask}: Props) => {
   const {selectedTask, setSelectedTask} = useAppContext();
   const [openForm, updateOpenForm] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
 
   const handleTaskSubmit = (task: Task) => {
+    console.log({task});
     addTask(task);
     setTitle("");
     updateOpenForm(false);
@@ -44,7 +47,7 @@ const ListItem = ({taskList, onDropItem, addTask, type}: Props) => {
           return (
             <div
               key={task.id}
-              className="p-2 border rounded shadow-sm hover:bg-gray-100 "
+              className="flex items-center justify-between p-2 border rounded shadow-sm hover:bg-gray-100 group"
               draggable
               onDragOver={(event) => {
                 event.preventDefault();
@@ -60,6 +63,12 @@ const ListItem = ({taskList, onDropItem, addTask, type}: Props) => {
               onDrop={() => onDropItem(task)}
             >
               {task.title}
+              <PiTrashThin
+                className="hidden hover:cursor-pointer group-hover:block"
+                onClick={() => {
+                  deleteTask(task);
+                }}
+              />
             </div>
           );
         })}
@@ -75,7 +84,7 @@ const ListItem = ({taskList, onDropItem, addTask, type}: Props) => {
                 handleTaskSubmit({
                   title: title || "Untitled",
                   id: Date.now(),
-                  index: `${type}_${taskList.length + 1}`,
+                  index: `${type}_${taskList.length}`,
                   description,
                   status: type,
                 });
@@ -86,7 +95,7 @@ const ListItem = ({taskList, onDropItem, addTask, type}: Props) => {
               handleTaskSubmit({
                 title: title || "Untitled",
                 id: Date.now(),
-                index: `${type}_${taskList.length + 1}`,
+                index: `${type}_${taskList.length}`,
                 description,
                 status: type,
               });
