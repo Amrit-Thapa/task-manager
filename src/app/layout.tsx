@@ -1,6 +1,5 @@
 import "./globals.css";
 import type {Metadata} from "next";
-import Sidebar from "./components/Sidebar";
 import {ComponentProps} from "react";
 import {AppContextProvider} from "./AppContextProvider";
 
@@ -20,7 +19,6 @@ export default function RootLayout({children}: ComponentProps<"body">) {
           className="flex max-w-[1600px] m-auto"
           suppressHydrationWarning={true}
         >
-          {/* <Sidebar /> */}
           <div className="w-full px-4">
             <div className="flex items-end w-full h-32" id="title-portal"></div>
             <div className="pt-10">{children}</div>
