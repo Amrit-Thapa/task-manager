@@ -87,7 +87,6 @@ export const updateData = <T>(
     request = indexedDB.open(DBName.TaskManager);
 
     request.onsuccess = () => {
-      console.log("updating key");
       db = request.result;
       const tx = db.transaction(storeName, "readwrite");
       const store = tx.objectStore(storeName);
@@ -133,65 +132,65 @@ export const deleteData = (
 
     request.onsuccess = () => {
       db = request.result;
-
       const tx = db.transaction(storeName, "readwrite");
       const store = tx.objectStore(storeName);
 
       let updatePromises = [];
 
+      updatePromises.push(
+        new Promise((res, rej) => {
+          const req = store.delete(data.id);
+          req.onsuccess = () => {
+            res(true);
+          };
+
+          req.onerror = () => {
+            rej(false);
+          };
+        }),
+      );
+
       if (data.updateItems) {
         updatePromises = Object.keys(data.updateItems).map((key) => {
           return new Promise((resolve, reject) => {
             const getReq = store.get(+key);
-            getReq.onsuccess = (event) => {
-              const itemToUpdate = event?.target?.result;
+            getReq.onsuccess = () => {
+              const itemToUpdate = getReq.result;
               if (itemToUpdate) {
-                Object.assign(itemToUpdate, {index: data.updateItems![+key]});
+                const putReq = store.put({
+                  ...itemToUpdate,
+                  index: data.updateItems![+key],
+                });
 
-                const putReq = store.put(itemToUpdate);
                 putReq.onsuccess = () => {
                   resolve(true);
                 };
 
-                putReq.onerror = (event) => {
-                  console.error("Error updating item:", event?.target?.error);
-                  reject(event?.target?.error);
+                putReq.onerror = () => {
+                  reject(putReq.error);
                 };
               } else {
-                reject(new Error("Item not found." + key));
+                reject(new Error("Item not found."));
               }
             };
           });
         });
-
-        updatePromises.push(
-          new Promise((res, rej) => {
-            const req = store.delete(data.id);
-            req.onsuccess = () => {
-              res(true);
-            };
-
-            req.onerror = () => {
-              rej(false);
-            };
-          }),
-        );
-
-        Promise.all(updatePromises)
-          .then(() => {
-            tx.oncomplete = () => {
-              db.close();
-              console.log("Update operations completed.");
-              resolve(true);
-            };
-          })
-          .catch((error) => {
-            tx.abort();
-            db.close();
-            console.error("Error updating records:", error);
-            reject(error);
-          });
       }
+
+      Promise.all(updatePromises)
+        .then(() => {
+          tx.oncomplete = () => {
+            db.close();
+            console.log("Update operations completed.");
+            resolve(true);
+          };
+        })
+        .catch((error) => {
+          tx.abort();
+          db.close();
+          console.error("Error updating records:", error);
+          reject(error);
+        });
     };
   });
 };
