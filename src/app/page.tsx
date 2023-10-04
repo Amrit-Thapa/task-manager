@@ -1,7 +1,6 @@
 "use client";
 import {useEffect, useLayoutEffect, useRef, useState} from "react";
-import {createPortal} from "react-dom";
-import {MdOutlineAddTask, MdOutlineDoneAll} from "react-icons/md";
+import {MdOutlineDoneAll} from "react-icons/md";
 import {LuListTodo} from "react-icons/lu";
 import {AiOutlineStop} from "react-icons/ai";
 import {TbProgressCheck} from "react-icons/tb";
@@ -18,21 +17,6 @@ import {
 import {useAppContext} from "./AppContextProvider";
 import TaskList from "./components/TaskList";
 import {deleteFromIndex, groupBy, insertTaskAtIndex} from "./utils/index";
-
-const Header = () => {
-  return (
-    <div className="flex flex-col items-start gap-5">
-      <div className="flex items-center justify-center gap-2 text-4xl">
-        <MdOutlineAddTask />
-        Plan Your Tasks
-      </div>
-      <div>
-        <li>Click + New to create a new task directly on this board. </li>
-        <li>Click an existing task to add additional context or subtasks.</li>
-      </div>
-    </div>
-  );
-};
 
 export default function Home() {
   const {selectedTask, setSelectedTask} = useAppContext();
@@ -128,7 +112,6 @@ export default function Home() {
 
   return (
     <>
-      {ref.current && createPortal(<Header />, ref.current!)}
       <div className="grid grid-cols-5 min-h-[calc(100vh-114px)] gap-3 pt-10 border-t">
         <TaskList>
           <div className="flex items-center gap-2">

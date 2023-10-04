@@ -1,6 +1,7 @@
 import React, {ComponentProps, useState} from "react";
 import {twMerge} from "tailwind-merge";
 import {PiTrashThin} from "react-icons/pi";
+import {CiEdit} from "react-icons/ci";
 import {Task, Status} from "../../../database/index";
 import {useAppContext} from "../AppContextProvider";
 
@@ -48,17 +49,31 @@ const ListItem = ({taskList, onDropItem, addTask, type, deleteTask}: Props) => {
             <div
               key={task.id}
               className="flex items-center justify-between p-2 border rounded shadow-sm hover:bg-gray-100 group"
+              draggable
+              onDragOver={(event) => {
+                event.preventDefault();
+              }}
+              onDragLeave={(event) => {
+                event.preventDefault();
+              }}
               onDragStart={() => setSelectedTask(task)}
               onDrop={() => onDropItem(task)}
-              draggable
             >
               {task.title}
-              <PiTrashThin
-                className="hidden hover:cursor-pointer group-hover:block"
-                onClick={() => {
-                  deleteTask(task);
-                }}
-              />
+              <div className="hidden bg-white border rounded group-hover:block">
+                <div className="flex items-center hover:shadow ">
+                  <div className="flex items-center justify-center w-8 h-[22px] hover:bg-gray-200 hover:cursor-pointer border-r">
+                    <CiEdit />
+                  </div>
+                  <div className="flex items-center justify-center w-8 h-[22px] hover:bg-gray-200 hover:cursor-pointer ">
+                    <PiTrashThin
+                      onClick={() => {
+                        deleteTask(task);
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
           );
         })}
