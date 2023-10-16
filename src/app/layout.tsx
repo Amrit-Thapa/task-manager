@@ -1,8 +1,10 @@
 import "./globals.css";
 import type {Metadata} from "next";
 import {ComponentProps} from "react";
+import Image from "next/image";
 import {MdOutlineAddTask} from "react-icons/md";
 import {AppContextProvider} from "./AppContextProvider";
+import TaskIcon from "./Task.svg";
 
 export const metadata: Metadata = {
   title: "Task Tracker",
@@ -14,6 +16,7 @@ export default function RootLayout({children}: ComponentProps<"body">) {
     <html lang="en">
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="icon" href="./favicon.ico" />
       </head>
       <AppContextProvider>
         <body
@@ -23,7 +26,7 @@ export default function RootLayout({children}: ComponentProps<"body">) {
           <div className="w-full p-4">
             <div className="flex flex-col items-start gap-5">
               <div className="flex items-center justify-center gap-2 text-4xl">
-                <MdOutlineAddTask />
+                <Image src={TaskIcon} height={50} width={50} alt="TaskManger" />
                 Plan Your Tasks
               </div>
               <div>
