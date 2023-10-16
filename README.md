@@ -1,34 +1,88 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Task Manager App - Next.js
 
-## Getting Started
+Welcome to the Task Manager App built with Next.js! This project allows you to manage your tasks by adding, editing, deleting, and moving them between different statuses such as "In Progress," "Backlog," and "Done." This README will guide you through setting up and using the application.
 
-First, run the development server:
+## Data Persistence with IndexedDB
+
+This Task Manager App utilizes IndexedDB to provide data persistence. IndexedDB is a low-level, browser-based database that allows us to store your tasks locally in your web browser. This means that all your tasks will remain available even after you close and reopen the application or refresh the page.
+
+### How it Works
+
+- When you add, edit, delete, or move tasks, the changes are saved to the IndexedDB database.
+- The app fetches and displays your tasks from IndexedDB when you load the page, ensuring that your task data is always accessible.
+
+IndexedDB is a powerful tool for client-side data storage, and it enhances the user experience by preserving your tasks across sessions.
+
+Please note that IndexedDB data is specific to the browser and device you are using. Clearing browser data or using a different device may result in a different set of tasks.
+
+## Demo
+
+https://task-manager-flame-psi.vercel.app/
+
+![Logo](https://dev-to-uploads.s3.amazonaws.com/uploads/articles/th5xamgrr6se0x5ro4g6.png)
+
+#### Adding a Task
+
+- On the app's homepage, you will see a "Add New Task" button. Click on it.
+- A form will appear where you can enter the task details, such as title, description, and status.
+- Fill in the required information and click the "Add Task" button.
+- Your new task will be added to the task section by default.
+
+#### Editing a Task
+
+- To edit a task, find the task you want to edit in the list.
+- Click on the task to open the edit form.
+- Make the necessary changes and click the "Save" button to update the task.
+
+#### Deleting a Task
+
+- To delete a task, find the task you want to delete in the list.
+- Click on the task to open the edit form.
+- Scroll down to the bottom of the edit form, and you will find a "Delete" button. Click on it.
+- Confirm the deletion, and the task will be removed from the list.
+
+#### Moving a Task
+
+- Tasks can be moved between different statuses: "In Progress," "Backlog," and "Done."
+- To move a task, find the task you want to move in the list.
+- Click and drag the task to the desired section, and it will be automatically updated with the new status.
+
+## Future Goals
+
+We are committed to continuously improving the Task Manager App. Here are some exciting future goals for the project:
+
+### 1. Offline Support
+
+One of our top priorities is to enhance the user experience by adding offline support. We plan to implement a service worker that will cache the app's assets and data, allowing you to access and manage your tasks even when you are offline. This feature will ensure that you can work on your tasks seamlessly, regardless of your internet connection.
+
+### 2. Creating a Progressive Web App (PWA)
+
+To make the Task Manager App more accessible and user-friendly on mobile devices, we aim to turn it into a Progressive Web App (PWA). This means that you will be able to install the app on your mobile device's home screen, just like a native app, and use it without the need to visit a website. A PWA will provide a smoother and more efficient task management experience on your mobile device.
+
+We are excited about these upcoming features and look forward to delivering an even more robust and user-friendly task management solution in the future. Stay tuned for updates and improvements!
+
+## Run Locally
+
+Clone the project
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
+  git clone https://github.com/Amrit-Thapa/task-manager
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Go to the project directory
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+  cd task-manager
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+Install dependencies
 
-## Learn More
+```bash
+  npm install
+```
 
-To learn more about Next.js, take a look at the following resources:
+Start the server
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+```bash
+  npm run dev
+```
