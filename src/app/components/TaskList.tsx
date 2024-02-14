@@ -29,13 +29,12 @@ const Label = ({children, className}: ComponentProps<"div">) => {
 };
 
 const ListItem = ({taskList, onDropItem, addTask, type, deleteTask}: Props) => {
-  const {selectedTask, setSelectedTask} = useAppContext();
+  const {setSelectedTask} = useAppContext();
   const [openForm, updateOpenForm] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
 
   const handleTaskSubmit = (task: Task) => {
-    console.log({task});
     addTask(task);
     setTitle("");
     updateOpenForm(false);

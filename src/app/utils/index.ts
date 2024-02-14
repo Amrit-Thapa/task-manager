@@ -1,4 +1,5 @@
 import {Task} from "../../../database/index";
+import {Status} from "../AppContextProvider";
 
 export const groupBy = <T, K>(
   array: T[],
@@ -20,20 +21,37 @@ export const groupBy = <T, K>(
 export const insertTaskAtIndex = (
   tasks: Task[],
   newTask: Task,
-): {tasks: Task[]; updatedItem?: {[id: number]: string}[]} => {
-  let insertIndex: number = parseInt(newTask.index.split("_")[1]);
+): {
+  tasks: Task[];
+  updatedItems?: {
+    [id: number]: {
+      index: string;
+      status: Status;
+    };
+  };
+} => {
+  const index = newTask.index.split("_")[1];
+  let insertIndex = parseInt(index);
 
-  const updateList = <{[id: number]: string}[]>[];
+  const updatedItems: {
+    [id: number]: {
+      index: string;
+      status: Status;
+    };
+  } = {};
 
-  tasks.splice(insertIndex, 0, newTask);
+  tasks
+    .sort((a, b) => +a.index.split("_")[1] - +b.index.split("_")[1])
+    .splice(insertIndex, 0, newTask);
 
   for (let i = insertIndex; i < tasks.length; i++) {
-    updateList.push({
-      [tasks[i].id]: `${tasks[i].status}_${i}`,
-    });
+    updatedItems[tasks[i].id] = {
+      index: `${tasks[i].status}_${i}`,
+      status: tasks[i].status,
+    };
     tasks[i].index = `${tasks[i].status}_${i}`;
   }
-  return {tasks, updatedItem: updateList};
+  return {tasks, updatedItems};
 };
 
 export const deleteFromIndex = (
@@ -47,7 +65,9 @@ export const deleteFromIndex = (
   }
 
   const updateList = <{[id: number]: string}>{};
-  tasks.splice(taskIndexToDelete, 1);
+  tasks
+    .sort((a, b) => +a.index.split("_")[1] - +b.index.split("_")[1])
+    .splice(taskIndexToDelete, 1);
 
   for (let i = taskIndexToDelete; i < tasks.length; i++) {
     updateList[tasks[i].id] = `${tasks[i].status}_${i}`;

@@ -3,7 +3,7 @@ let db: IDBDatabase;
 let version = 1;
 
 export enum Status {
-  inProgress = "in_progress",
+  inProgress = "in-progress",
   done = "done",
   created = "created",
   backlog = "backlog",
@@ -57,8 +57,6 @@ export const addTask = <T>(
     request = indexedDB.open(DBName.TaskManager, version);
 
     request.onsuccess = () => {
-      console.log({data});
-
       db = request.result;
       const tx = db.transaction(storeName, "readwrite");
       const store = tx.objectStore(storeName);
@@ -100,6 +98,51 @@ export const updateData = <T>(
       res.onerror = () => {
         resolve(null);
       };
+    };
+  });
+};
+
+export const updateTasks = <T>(
+  storeName: Store,
+  items: T,
+): Promise<string | null> => {
+  return new Promise((resolve) => {
+    request = indexedDB.open(DBName.TaskManager);
+    request.onsuccess = () => {
+      db = request.result;
+      const tx = db.transaction(storeName, "readwrite");
+      const store = tx.objectStore(storeName);
+      const keys = Object.keys(items);
+      let itemsUpdated = 0;
+
+      keys.forEach((key) => {
+        const getRecord = store.get(+key);
+
+        getRecord.onerror = (event: Event) => {
+          console.log("Error getting keys:", event.target.error);
+        };
+
+        getRecord.onsuccess = (event) => {
+          const newData = {...getRecord.result, ...items[key]};
+          const updateRequest = store.put(newData);
+
+          updateRequest.onerror = function (event) {
+            console.error(
+              `Error updating item with key ${key}: ${
+                (event.target as IDBRequest).error
+              }`,
+            );
+            tx.abort();
+          };
+
+          updateRequest.onsuccess = function () {
+            itemsUpdated++;
+            if (itemsUpdated === keys.length) {
+              resolve("success");
+            }
+          };
+        };
+      });
     };
   });
 };
