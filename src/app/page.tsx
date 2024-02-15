@@ -71,7 +71,7 @@ export default function Home() {
 
   const handleTaskDrop = async (
     destinationStatus: Status,
-    selectedTask: Task,
+    selectedTask?: Task,
     task?: Task,
   ) => {
     if (!selectedTask) return;

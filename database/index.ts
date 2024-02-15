@@ -3,13 +3,16 @@ let db: IDBDatabase;
 let version = 1;
 
 export enum Status {
-  inProgress = "in-progress",
+  inProgress = "inProgress",
   done = "done",
   created = "created",
   backlog = "backlog",
 }
 
 export type PrefixIndex = `${Status}${"_"}${number}`;
+export type UpdateIndex = {
+  [id in Task["id"]]: {index: Task["index"]; status: Status};
+};
 
 export type Task = {
   title: string;
@@ -102,9 +105,9 @@ export const updateData = <T>(
   });
 };
 
-export const updateTasks = <T>(
+export const updateTasks = (
   storeName: Store,
-  items: T,
+  items: UpdateIndex,
 ): Promise<string | null> => {
   return new Promise((resolve) => {
     request = indexedDB.open(DBName.TaskManager);
@@ -119,11 +122,17 @@ export const updateTasks = <T>(
         const getRecord = store.get(+key);
 
         getRecord.onerror = (event: Event) => {
-          console.log("Error getting keys:", event.target.error);
+          console.log(
+            "Error getting keys:",
+            (event.target as IDBRequest).result,
+          );
         };
 
-        getRecord.onsuccess = (event) => {
-          const newData = {...getRecord.result, ...items[key]};
+        getRecord.onsuccess = () => {
+          const newData = {
+            ...getRecord.result,
+            ...items[+key as keyof UpdateIndex],
+          };
           const updateRequest = store.put(newData);
 
           updateRequest.onerror = function (event) {

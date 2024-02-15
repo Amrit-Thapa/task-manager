@@ -25,7 +25,7 @@ export const insertTaskAtIndex = (
   tasks: Task[];
   updatedItems?: {
     [id: number]: {
-      index: string;
+      index: Task["index"];
       status: Status;
     };
   };
@@ -35,7 +35,7 @@ export const insertTaskAtIndex = (
 
   const updatedItems: {
     [id: number]: {
-      index: string;
+      index: Task["index"];
       status: Status;
     };
   } = {};
@@ -46,7 +46,7 @@ export const insertTaskAtIndex = (
 
   for (let i = insertIndex; i < tasks.length; i++) {
     updatedItems[tasks[i].id] = {
-      index: `${tasks[i].status}_${i}`,
+      index: `${tasks[i].status}_${i}` as Task["index"],
       status: tasks[i].status,
     };
     tasks[i].index = `${tasks[i].status}_${i}`;
