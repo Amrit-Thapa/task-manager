@@ -2,8 +2,8 @@ import React, {ComponentProps, useState} from "react";
 import {twMerge} from "tailwind-merge";
 import {PiTrashThin} from "react-icons/pi";
 import {CiEdit} from "react-icons/ci";
-import {Task, Status} from "../../../database/index";
 import {useAppContext} from "../AppContextProvider";
+import {Status, Task} from "../utils/types";
 
 type Props = {
   taskList: Task[];

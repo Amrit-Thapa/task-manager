@@ -1,23 +1,6 @@
 "use client";
 import React, {createContext, useState, useContext} from "react";
-import {Task} from "../../database";
-
-export enum Status {
-  inProgress = "inProgress",
-  done = "done",
-  created = "created",
-  backlog = "backlog",
-}
-
-export type Project = {
-  id: string;
-  title: string;
-  description: string;
-  createdTask: Task[];
-  inProgressTask: Task[];
-  backlogTask: Task[];
-  doneTask: Task[];
-};
+import {Task} from "./utils/types";
 
 type appContext = {
   selectedTask: Task | undefined;

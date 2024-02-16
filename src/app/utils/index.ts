@@ -1,5 +1,4 @@
-import {Task} from "../../../database/index";
-import {Status} from "../AppContextProvider";
+import {Status, Task} from "./types";
 
 export const groupBy = <T, K>(
   array: T[],
@@ -21,6 +20,7 @@ export const groupBy = <T, K>(
 export const insertTaskAtIndex = (
   tasks: Task[],
   newTask: Task,
+  index: number,
 ): {
   tasks: Task[];
   updatedItems?: {
@@ -30,49 +30,54 @@ export const insertTaskAtIndex = (
     };
   };
 } => {
-  const index = newTask.index.split("_")[1];
-  let insertIndex = parseInt(index);
-
+  const status = tasks[0].status;
   const updatedItems: {
     [id: number]: {
       index: Task["index"];
       status: Status;
     };
   } = {};
+  if (tasks.length < index) {
+    return {
+      tasks: tasks.splice(index, 0, {
+        ...newTask,
+        index: `${status}_${index}`,
+        status: status,
+      }),
+      updatedItems,
+    };
+  }
+  tasks.splice(index, 0, newTask);
 
-  tasks
-    .sort((a, b) => +a.index.split("_")[1] - +b.index.split("_")[1])
-    .splice(insertIndex, 0, newTask);
+  for (let i = index; i < tasks.length; i++) {
+    tasks[i] = {
+      ...tasks[i],
+      index: `${status}_${i}`,
+      status: status,
+    };
 
-  for (let i = insertIndex; i < tasks.length; i++) {
     updatedItems[tasks[i].id] = {
-      index: `${tasks[i].status}_${i}` as Task["index"],
+      index: `${tasks[i].status}_${i}`,
       status: tasks[i].status,
     };
-    tasks[i].index = `${tasks[i].status}_${i}`;
   }
   return {tasks, updatedItems};
 };
 
 export const deleteFromIndex = (
   tasks: Task[],
-  indexToDelete: string,
+  indexToDelete: number,
 ): {tasks: Task[]; updateIds?: {[id: number]: string}} => {
-  const taskIndexToDelete: number = parseInt(indexToDelete.split("_")[1]);
-
-  if (isNaN(taskIndexToDelete)) {
-    return {tasks};
-  }
-
   const updateList = <{[id: number]: string}>{};
-  tasks
-    .sort((a, b) => +a.index.split("_")[1] - +b.index.split("_")[1])
-    .splice(taskIndexToDelete, 1);
-
-  for (let i = taskIndexToDelete; i < tasks.length; i++) {
-    updateList[tasks[i].id] = `${tasks[i].status}_${i}`;
+  tasks.splice(indexToDelete, 1);
+  for (let i = indexToDelete; i < tasks.length; i++) {
     tasks[i].index = `${tasks[i].status}_${i}`;
+    updateList[tasks[i].id] = `${tasks[i].status}_${i}`;
   }
 
   return {tasks, updateIds: updateList};
+};
+
+export const sortItems = (data: Task[]) => {
+  return data.sort((a, b) => +a.index.split("_")[1] - +b.index.split("_")[1]);
 };

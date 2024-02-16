@@ -1,26 +1,8 @@
+import {PrefixIndex, Status, Task} from "@/app/utils/types";
+
 let request: IDBOpenDBRequest;
 let db: IDBDatabase;
 let version = 1;
-
-export enum Status {
-  inProgress = "inProgress",
-  done = "done",
-  created = "created",
-  backlog = "backlog",
-}
-
-export type PrefixIndex = `${Status}${"_"}${number}`;
-export type UpdateIndex = {
-  [id in Task["id"]]: {index: Task["index"]; status: Status};
-};
-
-export type Task = {
-  title: string;
-  id: number;
-  index: PrefixIndex;
-  description: string;
-  status: Status;
-};
 
 export enum Store {
   Tasks = "tasks",
@@ -28,6 +10,13 @@ export enum Store {
 export enum DBName {
   TaskManager = "taskManager",
 }
+
+type UpdateItem = {
+  [key in Task["id"]]: {
+    status: Status;
+    index: PrefixIndex;
+  };
+};
 export const initDB = (): Promise<boolean | IDBDatabase> => {
   return new Promise((resolve, reject) => {
     request = indexedDB.open(DBName.TaskManager);
@@ -52,10 +41,10 @@ export const initDB = (): Promise<boolean | IDBDatabase> => {
 };
 
 // create event
-export const addTask = <T>(
+export const addData = (
   storeName: Store,
-  data: T,
-): Promise<T | string | null> => {
+  data: Task,
+): Promise<Task | string | null> => {
   return new Promise((resolve) => {
     request = indexedDB.open(DBName.TaskManager, version);
 
@@ -107,7 +96,7 @@ export const updateData = <T>(
 
 export const updateTasks = (
   storeName: Store,
-  items: UpdateIndex,
+  items: UpdateItem,
 ): Promise<string | null> => {
   return new Promise((resolve) => {
     request = indexedDB.open(DBName.TaskManager);
@@ -131,7 +120,7 @@ export const updateTasks = (
         getRecord.onsuccess = () => {
           const newData = {
             ...getRecord.result,
-            ...items[+key as keyof UpdateIndex],
+            ...items[+key as keyof UpdateItem],
           };
           const updateRequest = store.put(newData);
 
