@@ -8,9 +8,12 @@ export enum Status {
 export type PrefixIndex = `${Status}${"_"}${number}`;
 
 export type Task = {
+  id?: number; // Optional because it will auto-increment
   title: string;
-  id: number;
-  index: PrefixIndex;
   description: string;
-  status: Status;
+  priority: "High" | "Medium" | "Low"; // Priority of the task
+  dueDate: string; // ISO string format for the due date
+  status: Status; // Status to track the task's current stage
+  createdAt: string; // ISO string format for task creation date
+  updatedAt?: string;
 };
